@@ -1,0 +1,92 @@
+<App Theme="Basic">
+	<DockPanel>
+
+		<JavaScript>
+		var Observable = require('FuseJS/Observable');
+		var InterApp= require('FuseJS/InterApp');
+
+		var isLoading = Observable(false);
+		var products = Observable();
+
+		function endLoading(){
+			isLoading.value = false;
+		}
+
+		function Product(name, company, reason){
+			console.log("adding " + name + company + reason);
+			this.name = name;
+			this.company = company;
+			this.reason = reason;
+			this.clicked_handler=function(){
+				console.log("clicked");
+				InterApp.launchUri(this.reason);
+			}.bind(this);
+			this.namestring=this.name + " by " + this.company;
+		}
+
+		function reloadHandler(){ 
+			isLoading.value = true;
+			//setTimeout(endLoading, 3000);
+			fetch('https://raw.githubusercontent.com/thinkong/BannedProducts/master/products.js')
+			.then(function(response){return response.json();})
+			.then(function(rObject){
+				products.clear();
+				var json = rObject["data"];
+				console.log(json.length);
+				for (var i = 0; i < json.length; i++){
+					var item = json[i]
+					console.log(JSON.stringify(item));
+					products.add(new Product(item["name"], item["company"], item["reason"]));
+					//products.add(1);
+					//console.log(JSON.stringify(data));
+					console.log("added");
+				};
+				//console.log(data);
+				console.log("end reloading");
+				endLoading(); 
+			})
+		}
+		function gotoPage(page){
+			InterApp.launchUri(page);
+		}
+		reloadHandler();
+
+		module.exports={
+			products:products,
+			isLoading: isLoading,
+			reloadHandler: reloadHandler,
+			gotoPage: gotoPage
+		};
+		</JavaScript>
+		<StatusBarBackground Dock="Top"/>
+		<BottomBarBackground Dock="Bottom" />
+		<StackPanel Dock="Top" Background="#fff">
+			<Text Value="Don't Buy these" FontSize="30" Alignment="VerticalCenter" TextAlignment="Center" Padding="2"/>
+			<Rectangle Height="1" Margin="0,3,0,0" Fill="#333c38"/>
+			
+		</StackPanel>
+		<StackPanel Background="#fff">
+			<ScrollView SnapMinTransform="false">
+				<DockPanel>
+					<CogWheelReload Dock="Top" />
+					<StackPanel Background="#fff">
+						<Each Items="{products}">
+							<DockPanel Height="120" Margin="10,0">
+								<Rectangle Layer="Background" CornerRadius="10" Fill="#faf" />
+								<DropShadow ux:Name="dropShadow" Color="#333" Distance="10" Size="10" Angle="180" />
+								<Panel DockPanel.Dock="Top" Margin="10" Height="30">
+									<Rectangle Layer="Background" CornerRadius="10" Fill="#fff"/>
+									<Text Value="{namestring}" Alignment="VerticalCenter" TextAlignment="Center"/>
+								</Panel>
+								<Panel DockPanel.Dock="Top" Margin="10" Height="30">
+									<Rectangle Layer="Background" CornerRadius="10" Fill="#fff" />
+									<Text Value="Reason" Alignment="VerticalCenter" TextAlignment="Center" Clicked="{clicked_handler}"/>
+								</Panel>
+							</DockPanel>
+						</Each>
+					</StackPanel>
+				</DockPanel>
+			</ScrollView>
+		</StackPanel>
+	</DockPanel>
+</App>
