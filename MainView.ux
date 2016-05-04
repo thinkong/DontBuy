@@ -7,6 +7,7 @@
 
 		var isLoading = Observable(false);
 		var products = Observable();
+		var filteredProducts = Observable();
 
 		function endLoading(){
 			isLoading.value = false;
@@ -22,6 +23,24 @@
 				InterApp.launchUri(this.reason);
 			}.bind(this);
 			this.namestring=this.name + " by " + this.company;
+		}
+
+		function filterProducts(prodname){
+			filteredProducts.clear();
+			var allProd = products.toArray();
+			for(var i = 0; i < allProd.length; i++){
+				if (prodname == null){
+					filteredProducts.add(allProd[i])
+				} else {
+					if (allProd[i].name.toLowerCase().includes(prodname.toLowerCase())){
+						filteredProducts.add(allProd[i])
+					}
+				}
+			}
+		}
+		function OnSearchInputChange(arg){
+			console.log(JSON.stringify(arg.value));
+			filterProducts(arg.value)
 		}
 
 		function reloadHandler(){ 
@@ -43,6 +62,7 @@
 				};
 				//console.log(data);
 				console.log("end reloading");
+				filterProducts();
 				endLoading(); 
 			})
 		}
@@ -52,18 +72,19 @@
 		reloadHandler();
 
 		module.exports={
-			products:products,
+			products:filteredProducts,
 			isLoading: isLoading,
 			reloadHandler: reloadHandler,
-			gotoPage: gotoPage
+			gotoPage: gotoPage,
+			onSearch: OnSearchInputChange
 		};
 		</JavaScript>
 		<StatusBarBackground Dock="Top"/>
 		<BottomBarBackground Dock="Bottom" />
 		<StackPanel Dock="Top" Background="#fff">
 			<Text Value="Don't Buy these" FontSize="30" Alignment="VerticalCenter" TextAlignment="Center" Padding="2"/>
+			<TextInput PlaceholderText="Search by Name..." ValueChanged="{onSearch}"/>
 			<Rectangle Height="1" Margin="0,3,0,0" Fill="#333c38"/>
-			
 		</StackPanel>
 		<StackPanel Background="#fff">
 			<ScrollView SnapMinTransform="false">
