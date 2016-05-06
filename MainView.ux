@@ -46,7 +46,7 @@
 		function reloadHandler(){ 
 			isLoading.value = true;
 			//setTimeout(endLoading, 3000);
-			fetch('https://raw.githubusercontent.com/thinkong/BannedProducts/master/products.js')
+			fetch('https://raw.githubusercontent.com/thinkong/BannedProducts/master/products.json')
 			.then(function(response){return response.json();})
 			.then(function(rObject){
 				products.clear();
